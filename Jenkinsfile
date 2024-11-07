@@ -1,37 +1,7 @@
-// pipeline {
-//     agent any
-
-//     stages {
-//         stage('Checkout') {
-//             steps {
-//             checkout scm
-//             }
-//         }
-        
-//         stage ("terraform init") {
-//             steps {
-//                 sh ('terraform init -reconfigure') 
-//             }
-//         }
-//         stage ("terraform plan") {
-//             steps {
-//                 sh ('terraform plan') 
-//             }
-//         }
-                
-//         stage ("terraform Action") {
-//             steps {
-//                 echo "Terraform action is --> ${action}"
-//                 sh ('terraform ${action} --auto-approve') 
-//            }
-//         }
-//     }
-// }
-
 pipeline {
     agent any
     parameters {
-        string(name: 'action', defaultValue: 'plan', description: 'Specify Terraform action (plan or apply)')
+        string(name: 'action', defaultValue: 'plan', description: 'Specify Terraform action (e.g., plan or apply)')
     }
 
     stages {
@@ -56,15 +26,7 @@ pipeline {
         stage('terraform Action') {
             steps {
                 echo "Terraform action is --> ${params.action}"
-                script {
-                    if (params.action == 'apply') {
-                        sh 'terraform apply -auto-approve tfplan'  // Uses saved plan for apply
-                    } else if (params.action == 'plan') {
-                        sh 'terraform plan'
-                    } else {
-                        error "Invalid action: ${params.action}. Only 'plan' or 'apply' are allowed."
-                    }
-                }
+                sh "terraform ${params.action} -auto-approve tfplan"  // Executes either 'plan' or 'apply' based on input
             }
         }
     }
