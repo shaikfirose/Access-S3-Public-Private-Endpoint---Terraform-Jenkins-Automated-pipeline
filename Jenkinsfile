@@ -1,7 +1,7 @@
 pipeline {
     agent any
     parameters {
-        string(name: 'action', defaultValue: 'plan', description: 'Specify Terraform action (e.g., plan or apply)')
+        string(name: 'action', defaultValue: 'plan', description: 'Specify Terraform action (apply or destroy)')
     }
 
     stages {
@@ -26,7 +26,15 @@ pipeline {
         stage('terraform Action') {
             steps {
                 echo "Terraform action is --> ${params.action}"
-                sh "terraform ${params.action} -auto-approve tfplan"  // Executes either 'plan' or 'apply' based on input
+                script {
+                    if (params.action == 'apply') {
+                        sh 'terraform apply -auto-approve tfplan'  // Uses saved plan for apply
+                    } else if (params.action == 'destroy') {
+                        sh 'terraform destroy -auto-approve'  // Executes destroy with auto-approve
+                    } else {
+                        error "Invalid action: ${params.action}. Only 'apply' or 'destroy' are allowed."
+                    }
+                }
             }
         }
     }
