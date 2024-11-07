@@ -1,41 +1,33 @@
 pipeline {
     agent any
-    parameters {
-        string(name: 'action', defaultValue: 'plan', description: 'Specify Terraform action (apply or destroy)')
+        parameters {
+        string(name: 'action', defaultValue: 'plan', description: 'Specify Terraform action (plan or apply)')
     }
+
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+            checkout scm
             }
         }
-
-        stage('terraform init') {
+        
+        stage ("terraform init") {
             steps {
-                sh 'terraform init -reconfigure'
+                sh ('terraform init -reconfigure') 
             }
         }
-
-        stage('terraform plan') {
+        stage ("terraform plan") {
             steps {
-                sh 'terraform plan -out=tfplan'  // Saves the plan as "tfplan"
+                sh ('terraform plan -out=tfplan') 
             }
         }
-
-        stage('terraform Action') {
+                
+        stage ("terraform Action") {
             steps {
-                echo "Terraform action is --> ${params.action}"
-                script {
-                    if (params.action == 'apply') {
-                        sh 'terraform apply -auto-approve tfplan'  // Uses saved plan for apply
-                    } else if (params.action == 'destroy') {
-                        sh 'terraform destroy -auto-approve'  // Executes destroy with auto-approve
-                    } else {
-                        error "Invalid action: ${params.action}. Only 'apply' or 'destroy' are allowed."
-                    }
-                }
-            }
+                echo "Terraform action is --> ${action}"
+                sh ('terraform ${action} --auto-approve') 
+           }
         }
     }
 }
